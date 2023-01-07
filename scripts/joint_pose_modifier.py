@@ -1,15 +1,20 @@
 #!/usr/bin/env python
+"""
+.. module:: joint_pose_modifier
+   :platform: Unix
+   :synopsis: Script to move the arm
+.. moduleauthor::Alice Maria Catalano <s5157341@studenti.unige.it>
+
+	The purpose of this script is to control the joint of a robot and move it to a desired position. It does this by publishing commands 
+	to the topic "myRob/joint1_position_controller/command" and subscribing to the topic "myRob/joint1_position_controller/state" to monitor the joint's position. This allows the script to issue successive commands based on the current position of the robot's joint.
+
+
+"""
 # Import necessary libraries
 import rospy
 from control_msgs.msg import JointControllerState
 from std_msgs.msg import Float64
 
-"""
-The purpose of this script is to control the joint of a robot and move it to a desired position. It does this by publishing commands 
-to the topic "myRob/joint1_position_controller/command" and subscribing to the topic "myRob/joint1_position_controller/state" to monitor 
-the joint's position. This allows the script to issue successive commands based on the current position of the robot's joint.
-
-"""
 
 process_value=0
 

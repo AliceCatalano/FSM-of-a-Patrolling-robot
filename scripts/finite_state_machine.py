@@ -380,7 +380,7 @@ def setup_Dictionary():
     print(coordinates)
     
 def room_scan():
-     """"
+    """"
     This function controls the commands passed to the joints. Joint 1 will rotate 360 degrees to scan the room."
     
     """

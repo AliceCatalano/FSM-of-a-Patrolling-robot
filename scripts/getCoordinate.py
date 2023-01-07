@@ -3,8 +3,8 @@
 """
 .. module:: get_coordinates
    :platform: Unix
-   :synopsis: Service to move the robot to a desired position specified in the request
-.. moduleauthor:: Your Name <your@email.com>
+   :synopsis: Script to get the rooms coordinates
+.. moduleauthor:: Alice Maria Catalano <s5157341@studenti.unige.it>
 
 ROS Service to move the robot to a desired position specified in the request.
 

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scripts.joint_pose_modifier &mdash; fsm_patrolling_robot 2.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> fsm_patrolling_robot
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">fsm_patrolling_robot</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scripts.joint_pose_modifier</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scripts.joint_pose_modifier</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.. module:: joint_pose_modifier</span>
+<span class="sd">   :platform: Unix</span>
+<span class="sd">   :synopsis: Script to move the arm</span>
+<span class="sd">.. moduleauthor::Alice Maria Catalano &lt;s5157341@studenti.unige.it&gt;</span>
+
+<span class="sd">	The purpose of this script is to control the joint of a robot and move it to a desired position. It does this by publishing commands </span>
+<span class="sd">	to the topic &quot;myRob/joint1_position_controller/command&quot; and subscribing to the topic &quot;myRob/joint1_position_controller/state&quot; to monitor the joint&#39;s position. This allows the script to issue successive commands based on the current position of the robot&#39;s joint.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># Import necessary libraries</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">control_msgs.msg</span> <span class="kn">import</span> <span class="n">JointControllerState</span>
+<span class="kn">from</span> <span class="nn">std_msgs.msg</span> <span class="kn">import</span> <span class="n">Float64</span>
+
+
+<span class="n">process_value</span><span class="o">=</span><span class="mi">0</span>
+
+<div class="viewcode-block" id="joint_action"><a class="viewcode-back" href="../../index.html#scripts.joint_pose_modifier.joint_action">[docs]</a><span class="k">def</span> <span class="nf">joint_action</span><span class="p">():</span>
+    <span class="c1"># Create ROS node</span>
+    <span class="sd">&quot;&quot;&quot;&quot;</span>
+<span class="sd">    This function controls the commands passed to the joints. Joint 1 will rotate 360 degrees to scan the room.&quot;</span>
+<span class="sd">    </span>
+<span class="sd">    Raises: </span>
+<span class="sd">        - ROSInterruptException</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s1">&#39;joint_pose_modifier&#39;</span><span class="p">,</span> <span class="n">anonymous</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">joint1_pose_pub</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Publisher</span><span class="p">(</span><span class="s1">&#39;/myRob/joint1_position_controller/command&#39;</span><span class="p">,</span> <span class="n">Float64</span><span class="p">,</span> <span class="n">queue_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="s2">&quot;/myRob/joint1_position_controller/state&quot;</span><span class="p">,</span> <span class="n">JointControllerState</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
+    <span class="n">joint1_pose_pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="o">-</span><span class="mf">3.14</span><span class="p">)</span>
+    
+    <span class="k">while</span> <span class="n">process_value</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mf">3.14</span><span class="p">:</span>
+        <span class="n">joint1_pose_pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="o">-</span><span class="mf">3.14</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">process_value</span> <span class="o">&lt;</span> <span class="mf">2.5</span><span class="p">:</span>
+        <span class="n">joint1_pose_pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="mf">2.5</span><span class="p">)</span>
+    <span class="n">joint1_pose_pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="callback"><a class="viewcode-back" href="../../index.html#scripts.joint_pose_modifier.callback">[docs]</a><span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Callback function for the joint position.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        - JointControllerState </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">process_value</span>
+    <span class="n">process_value</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">process_value</span></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">joint_action</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ROSInterruptException</span><span class="p">:</span>
+        <span class="k">pass</span>
+  
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alice Maria Catalano.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -119,7 +119,7 @@ def load_std_map():
     client.call('SAVE','','',['/root/ros_ws/src/fsm_patrolling_robot/maps/my_map.owl'])
 
 def reader():
-"""
+    """
     ROS Node to read the data from the subscribed topic '/marker_publisher/target' and extract the markers' ids. 
     When all the markers are detected, the node will shutdown the marker_publisher node, publish a boolean flag to the '/loader' topic 
     and call the function :mod:load_std_map.
@@ -130,7 +130,7 @@ def reader():
     Publishes to:
         - '/loader' a boolean flag to communicate when the map is ready to be built.
 
-"""
+    """
     rospy.init_node('loader_node', anonymous=True)
     subscriber=rospy.Subscriber("/marker_publisher/target", String, extract_aruco)
     while not rospy.is_shutdown():

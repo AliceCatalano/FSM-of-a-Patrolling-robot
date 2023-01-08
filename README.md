@@ -43,31 +43,37 @@ After creating the ontology using the [aRMOR Service commands](https://github.co
 
 Installation and running procedure
 -------------------------------------
-This repository has a lot of dependencies  coming from other ROS packages  like the [aRMOR](https://github.com/EmaroLab/armor) and the [SMACH](http://wiki.ros.org/smach) packages, so first of all these must be installed and run correctly as the sources explains.  
-Another toll was used to keep the terminal cleaner from not needed messages which is xterm, which will put those messages given by the aRMOR service in another small terminal. The command to make this program execute is already in the launch file, if the user want to use this feature the following installing instruction is needed:
+This repository has a lot of dependencies coming from other ROS packages like the [aRMOR](https://github.com/EmaroLab/armor) and the [SMACH](http://wiki.ros.org/smach), [ros_control](http://wiki.ros.org/ros_control#Hardware_Interfaces), [aruco_ros](https://github.com/CarmineD8/aruco_ros) packages, so first of all these must be installed and run correctly as the sources explains.  
+
+Another toll was used to keep the terminal cleaner from not needed messages which is xterm, which will put the messages given by the aRMOR service, the finite_state_mahcine.py and the getCoordinates service in another small terminal. The command to make this program execute is already in the launch file, if the user want to use this feature the following installing instruction is needed:
+
 ```bash
 sudo apt-get -y install xterm
 ```
-If the user would like not to use this tool, the launch file line can be deleted.  
+If the user would like not to use this tool, the launch files line can be deleted.  
 After this set up, the clone of **this** repository must be done in the src folder of the user's ROS workspace.
 ```bash
 cd <ros_workspace_path>/src
 git clone https://github.com/AliceCatalano/Finite-state-machine-Lab.git
 cd ..
 catkin_make
-```
-after building the package successfully  the user should enter in the `load_map.py` and fix the path of the map in line 60 and 74, the same for the `finite_state_machine` code in the `Load_map` state inserting the same path of line 74. 
+```  
+After building the package successfully the user should:  
+* go in the src folder of this repository and move the `marker_publish.cpp` in the src folder of the aruco package at this path: aruco_ros/aruco_ros/src.  
+* enter in the `load_map.py` and fix the path of the map in line 72 and the new map in line 119, the same for the `finite_state_machine` code in the `Load_map` state inserting the same path of line 449. 
+
 ```bash
-cd <ros_workspace_path>/src/Finite-statem-machine-Lab/assignment_1/scripts
+cd <ros_workspace_path>/src/fsm_patrolling_robot/scripts
 ```
 In this folder be sure to change in executable all the .py files
 ```bash
 chmod +x <name_of_file.py>
 ```
-It is now possible to call the launch file and run the working code.
+It is now possible to execute the catkin_make and then call the launch file and run the working code.
 
 ```bash
-roslaunch assignment_1 launch.launch
+roslaunch fsm_patrolling_robot assignment.launch
+roslaunch fsm_patrolling_robot launch.launch
 ```
 The SMACH viewer is not inserted in the launch file, if the user wants to see the states going on and off the following command in another terminal
 ```bash

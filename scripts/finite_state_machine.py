@@ -12,6 +12,9 @@ It menages the behavior  of a surveillance  robot, that stays mostly in corridor
 Subscribes  to:
     - /loader a Boolean flag to communicate when the map is totally created.
     - /battery_signal a Boolean flag to communicate when battery is low and when is totally charged
+    - /myRob/joint1_position_controller/state topic in which te position of the joint is published
+Publishes to:
+    - /myRob/joint1_position_controller/command topic to that receives the angles to rotate the joint
 
 """
 import roslib
@@ -28,7 +31,7 @@ from geometry_msgs.msg import Twist
 pause_time= 1.5         #global variable for the sleeping time
 battery_status = 1      # Battery is charged
 urgency_status = 0      # Battery flag for the urgent room
-loading = False          # True map is not loaded, False map is loaded
+loading = True          # True map is not loaded, False map is loaded
 shared_connection = ''  # String resulting from the connectedTo data property
 are_urgent=''           # String resulting from the query of the individuals in the URGENT class
 robot_position=''       # String that contains always one element, which is the robot position in that moment

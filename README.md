@@ -1,23 +1,25 @@
 FSM of a Patrolling robot
 ===============================
+FSM of a Patrolling robot
+===============================
 
 Introduction
 -----------------
-This repository contains a ROS package of the software architecture for a surveillance  robot actuated through a finite state machine, building the ontology for Robot to move in. The architecture is described in the following report specifying the ROS nodes and how the architecture's component interact between each other. The full [documentation](https://alicecatalano.github.io/Finite-State-Machine-ExpLab/) is available to this link. Python3 is used as programming language and the [SMACH tool](http://wiki.ros.org/smach) is used to define the finite state machine and [SMACH viewer](http://wiki.ros.org/smach_viewer) is used as debugging tool together with [Protégé](https://protege.stanford.edu/) that consent to start the reasoning of the OWL ontology and to visualize the data and object properties of the individuals. The whole architecture depends from the [aRMOR service](https://github.com/EmaroLab/armor) to use OWL ontologies in a ROS architecture.
+This repository contains a ROS (Robot Operating System) package that has improved the software architecture for a surveillance robot ([previous version](https://github.com/AliceCatalano/Finite-State-Machine-ExpLab.git) ) moving into the same environment built after scanning the aruco markers. The motion is planned using a finite state machine. The architecture is described in the following report specifying the ROS nodes and how the architecture's component interact between each other. The full [documentation](https://alicecatalano.github.io/fsm_patrolling_robot/#) is available to this link.  
+The tools specified in the precious version of the code remained, some additional features were implemented such as: autonomous  motion ([move_base](http://wiki.ros.org/move_base) and [gmapping](http://wiki.ros.org/gmapping)) and image processing ([OpenCV](https://github.com/ros-perception/vision_opencv)).
 
 Software Architecture
 --------------------------
 
 ### Scenario
-In this repository the user will find an already designed ontology map in which the robot will exploit the surveillance function. The environment can be visualized in the following picture.  
+This repository includes a pre-designed robot equipped with a camera and laser plugin, as well as a Gazebo environment where the robot is placed with aruco markers to build a semantical map. This map updates an already defined ontology.
 
 ![image](diagrams/environment.PNG "environment")  
 
-The robot main behavior is to stay in the `CORRIDOR` and to move to the `ROOMS` when one of those becomes `URGENT` which is after 7 seconds after the room was visited.   
-These 3 classes are the `LOCATION` subclasses, each individual will be classified by them and in the rooms case, the class `URGENT` will be added when the time threshold expires. `ROOM E` is a special room, used by the robot to recharge when the battery level is too low.  
-For a more detailed explanation about the classes and other data and object properties, visit [topological map](https://github.com/buoncubi/topological_map).  
-The behavior is designed to let the robot go in room in opposite positions, taking into account the map shown above for example, the robot is able to go from `R1` to `R4` if `R4` is `URGENT` while the robot is in `R1`.  
-The `battery_status` variable can block the execution of any task and send the robot to recharge, switching to the designed status. After the robot is charged, it will start from the task interrupted before.  
+The robot main behavior is the same as before: it mainly stays in the `CORRIDOR` and to move to the `ROOMS` when one of those becomes `URGENT`.  
+The `battery_status` variable may prevent the robot from executing tasks,  in which case the move_base goal will be changed to go recharge and switch to the designated status. Once recharged, the robot will resume the interrupted task.  
+When the robot enters a room now has to scan it, with the camera, exploiting a 360° range of motion of the revolute joint at the base of the arm.  
+When the robot enters a room, it scans the room using its camera and a 360° range of motion of the revolute joint at the base of its arm. Before entering the rooms, the robot is placed outside of them, surrounded by aruco markers. It scans these markers and builds the semantical map before using the `gmapping` tool to build the actual map..
 
 ### Finite state machine
 ![flowchart](diagrams/fsm_flowchart.PNG "fsm")  
@@ -32,9 +34,13 @@ It calls the `change_position(robPos, desPos)` function, that is the main method
 ### Nodes interactions  
 ![nodes](diagrams/node_interaction.PNG "nodes")    
 
-The diagram of how the nodes interact is simple, as the communication between them. The whole architecture is stored inside the Finite state function.  
+The diagram of how the nodes interact, there are a few additional nodes and communication standards.  
+*  joint_pose_modifier, the purpose of this node is to control the joint motion. it publishes on the topic `myRob/joint1_position_controller/command` with a value between -3.14 and 3.14, and subscribes to the topic `myRob/joint1_position_controller/state` to check on the rotation progress.  
+* getCoordinate, is the server that gets the `LOCATION` coordinates, from the function `go_to_coordinate()` in `finite_state_machine.py` and moves the robot there.  
+* marker_publish node that takes care of the image processing to detect and recognize the aruco markers. It will publish on the `/marker_publisher/target` topic the roomID and thanks to the `RoomInformation` service it is possible to retreive all the necessary informations for the `LOCATION` in `load_map.py`.  
+* marker_server is the server containing all the pre-designed information about the `LOCATION` thanks to the `RoomInformation` service that will have the roomID, this server will fill it up with the room's name, coordinate and connections.
 * battery_signal node, publishes on the topic with the same name `/battery_signal` a boolean value, that will be retrieved  in the `callback_batt(data)` function in the `finite_state_machine.py`, when `battery_status` = 0 the battery is low and the robot will change state to the `Recharging` one; if it is equal to 1, the battery is charged and the code will get back to the `Corridor_cruise` state and then to the task that was left when the battery died.  
-* load_map node, also here a simple publisher function that uses the `/loader` topic and will modify in the `callback(data)` the variable `**loading**: when it is equal to 1 the robot is still waiting for map, while when it's 0 the map got updated and the code will go to the `Corridor_cruise` state. This state will not be used anymore until the next run of the code.
+* load_map node, firstly subscribes to the `/marker_publisher/target` topic and in the callback `extract_aruco(string)` will fill the list of markers recognized during the first scan. Then publishes on the `/loader` topic: 1 the robot is still waiting for map, 0 the map got updated.
 After creating the ontology using the [aRMOR Service commands](https://github.com/EmaroLab/armor/blob/master/commands.md), all the rooms get the timestamp initialized with the robot going in each room and adding the *visitedAt* data property
 
 Installation and running procedure
@@ -88,15 +94,17 @@ Another important assumption is about the priority of the *emergency variables*,
 
 ### System limitation
 * The code is slow and takes time to compute the path
-* The used map is a standard 2D environment, built by hard code and part of the code strictly use this information 
+* The Gazebo environment is designed on the map already described in the previous assignemnt 
 * There is not any user interface with which the user could create his own map at that moment or upload an existing ontology
+* 
 
 ### Possible technical improvements
 Technical improvements would involve changing the structure of the code to make it faster in the computation especially  in the `changing_position` function, for example assuming that the robot can check just the urgency of the rooms next to him.  
 Using thread and mutex to prevent the overwriting of the global variables would make the architecture more reliable and robust.
 
+
 Authors and contacts
 --------------------------
 Code author: [Alice Maria Catalano](https://github.com/AliceCatalano)  
 Email: alice99960@gmail.com  
-Professor: [Luca Buoncompagni](https://github.com/buoncubi) and [Carmine Recchiuto](https://github.com/CarmineD8)
+Professor: [Carmine Recchiuto](https://github.com/CarmineD8)

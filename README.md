@@ -12,7 +12,7 @@ Software Architecture
 ### Scenario
 This repository includes a pre-designed robot equipped with a camera and laser plugin, as well as a Gazebo environment where the robot is placed with aruco markers to build a semantical map. This map updates an already defined ontology.
 
-![image](diagrams/environment.PNG "environment")  
+![image](environment.png)  
 
 The robot main behavior is the same as before: it mainly stays in the `CORRIDOR` and to move to the `ROOMS` when one of those becomes `URGENT`.  
 The `battery_status` variable may prevent the robot from executing tasks,  in which case the move_base goal will be changed to go recharge and switch to the designated status. Once recharged, the robot will resume the interrupted task.  

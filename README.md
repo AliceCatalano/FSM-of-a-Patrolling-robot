@@ -20,7 +20,7 @@ When the robot enters a room now has to scan it, with the camera, exploiting a 3
 When the robot enters a room, it scans the room using its camera and a 360° range of motion of the revolute joint at the base of its arm. Before entering the rooms, the robot is placed outside of them, surrounded by aruco markers. It scans these markers and builds the semantical map before using the `gmapping` tool to build the actual map..
 
 ### Finite state machine
-![flowchart](diagrams/fsm_flowchart.PNG "fsm")  
+![flowchart](fsm_flowchart.png)  
 
 The above diagram shows the Finite State Machine. It is composed by 4 main nodes, which are the states of the designed scenario:  
 * **LOAD_MAP STATE**, is a simple state that waits for the map to be uploaded by the external node `Load_map()`, which will subscribe to the topic `/loader`, which will publish *True* when the map is totally uploaded. This will change a flag in the callback in the `finite_state_machine.py` and will let the code go to the next state.  

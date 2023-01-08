@@ -67,7 +67,7 @@ def go_to_coordinate(coor):
         - coor: A string representing the key for the desired coordinates in the global dictionary coordinates.
     
     Returns:
-        - response.return_: An integer indicating whether the target coordinates have been reached (1) or not (0).
+        - response.return: An integer indicating whether the target coordinates have been reached (1) or not (0).
 
     """
     print('in go to coordinate')

@@ -22,8 +22,6 @@ import subprocess
 import sys
 sys.path.insert(0, os.path.abspath('.'))
 
-subprocess.call('doxygen Doxyfile.in', shell=True)
-
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
@@ -39,8 +37,7 @@ extensions = [
 	'sphinx.ext.githubpages',
 	"sphinx.ext.napoleon",
 	'sphinx.ext.inheritance_diagram',
-	'breathe'
-	]
+	'breathe']
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
@@ -50,12 +47,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-highlight_language = 'c++'
-source_suffix = '.rst'
-master_doc = 'index'
 html_theme = 'sphinx_rtd_theme'
 
 html_static_path = ['_static']
-html_static_path = ['_static']
-
-

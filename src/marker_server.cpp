@@ -2,8 +2,8 @@
 #include <fsm_patrolling_robot/RoomConnection.h>
 #include <fsm_patrolling_robot/RoomInformation.h>
 
-bool markerCallback(assignment2::RoomInformation::Request &req, assignment2::RoomInformation::Response &res){
-	assignment2::RoomConnection conn;
+bool markerCallback(fsm_patrolling_robot::RoomInformation::Request &req, fsm_patrolling_robot::RoomInformation::Response &res){
+	fsm_patrolling_robot::RoomConnection conn;
 	switch (req.id){
 	case 11:
 		res.room = "E";

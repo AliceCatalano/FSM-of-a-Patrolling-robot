@@ -77,8 +77,17 @@
 <li><a class="reference internal" href="#scripts.battery_signal.cancel_goal"><code class="docutils literal notranslate"><span class="pre">cancel_goal()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#load-map-module">Load map Module</a></li>
-<li><a class="reference internal" href="#get-coordinates-module">Get coordinates Module</a></li>
+<li><a class="reference internal" href="#module-scripts.load_map">Load map Module</a><ul>
+<li><a class="reference internal" href="#scripts.load_map.extract_aruco"><code class="docutils literal notranslate"><span class="pre">extract_aruco()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.load_map.load_std_map"><code class="docutils literal notranslate"><span class="pre">load_std_map()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.load_map.reader"><code class="docutils literal notranslate"><span class="pre">reader()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-scripts.getCoordinate">Get coordinates Module</a><ul>
+<li><a class="reference internal" href="#scripts.getCoordinate.callback"><code class="docutils literal notranslate"><span class="pre">callback()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.getCoordinate.get_coordinates"><code class="docutils literal notranslate"><span class="pre">get_coordinates()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-scripts.joint_pose_modifier">Joint pose modifier Module</a><ul>
 <li><a class="reference internal" href="#scripts.joint_pose_modifier.callback"><code class="docutils literal notranslate"><span class="pre">callback()</span></code></a></li>
 <li><a class="reference internal" href="#scripts.joint_pose_modifier.joint_action"><code class="docutils literal notranslate"><span class="pre">joint_action()</span></code></a></li>
@@ -364,7 +373,7 @@ all of them used to clean the queried string.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><ul class="simple">
-<li><p><a href="#id3"><span class="problematic" id="id4">response.return_</span></a></p></li>
+<li><p>response.return</p></li>
 </ul>
 </p>
 </dd>
@@ -409,7 +418,7 @@ from the ontology. The function then adds the room’s X and Y coordinates to th
 </div>
 <div class="section" id="module-scripts.battery_signal">
 <span id="battery-signal-module"></span><h1>Battery signal Module<a class="headerlink" href="#module-scripts.battery_signal" title="Permalink to this heading"></a></h1>
-<span class="target" id="module-battery_signal"></span><p>ROS Node to pblish the battery level, keeping it charget for a random period of time and keeping it in charge for 10 seconds</p>
+<span class="target" id="module-battery_signal"></span><p>ROS Node to publish the battery level, keeping it charget for a random period of time and keeping it in charge for 10 seconds</p>
 <dl class="simple">
 <dt>Publishes to:</dt><dd><ul class="simple">
 <li><p>/battery_signal a boolean flag to communicate when battery is low and when is totally charged</p></li>
@@ -439,15 +448,84 @@ setting the <cite>battery_status</cite> to 1 and continuing to publish.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="load-map-module">
-<h1>Load map Module<a class="headerlink" href="#load-map-module" title="Permalink to this heading"></a></h1>
+<div class="section" id="module-scripts.load_map">
+<span id="load-map-module"></span><h1>Load map Module<a class="headerlink" href="#module-scripts.load_map" title="Permalink to this heading"></a></h1>
+<span class="target" id="module-load_map"></span><p>ROS Node to create the Ontology map adn initialzie the timestamps for the Rooms, which represents a 2D environment of 4 rooms and 3 corridors</p>
+<dl class="simple">
+<dt>Publishes to:</dt><dd><ul class="simple">
+<li><p>/loader a boolean flag to communicate when the map is totally created.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.load_map.extract_aruco">
+<span class="sig-prename descclassname"><span class="pre">scripts.load_map.</span></span><span class="sig-name descname"><span class="pre">extract_aruco</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/load_map.html#extract_aruco"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.load_map.extract_aruco" title="Permalink to this definition"></a></dt>
+<dd><p>Call back function that extracts Aruco marker IDs from a string and appends them to the global list of markers if they are not
+already present.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>String</strong> (<em>-</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.load_map.load_std_map">
+<span class="sig-prename descclassname"><span class="pre">scripts.load_map.</span></span><span class="sig-name descname"><span class="pre">load_std_map</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/load_map.html#load_std_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.load_map.load_std_map" title="Permalink to this definition"></a></dt>
+<dd><p>Function to initialize the node, to initialize the publisher and to use the <a class="reference external" href="https://github.com/EmaroLab/armor/blob/master/commands.md">Armor commands</a> to create the ontology.
+It will publish a boolean that will be passed to the state <code class="docutils literal notranslate"><span class="pre">Load_map</span></code>, advertised by <code class="xref py py-mod docutils literal notranslate"><span class="pre">load_std_map</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.load_map.reader">
+<span class="sig-prename descclassname"><span class="pre">scripts.load_map.</span></span><span class="sig-name descname"><span class="pre">reader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/load_map.html#reader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.load_map.reader" title="Permalink to this definition"></a></dt>
+<dd><p>ROS Node to read the data from the subscribed topic ‘/marker_publisher/target’ and extract the markers’ ids.
+When all the markers are detected, the node will shutdown the marker_publisher node, publish a boolean flag to the ‘/loader’ topic
+and call the function :mod:load_std_map.</p>
+<dl class="simple">
+<dt>Subscribes to:</dt><dd><ul class="simple">
+<li><p>‘/marker_publisher/target’ a string containing the detected markers’ ids.</p></li>
+</ul>
+</dd>
+<dt>Publishes to:</dt><dd><ul class="simple">
+<li><p>‘/loader’ a boolean flag to communicate when the map is ready to be built.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
-<div class="section" id="get-coordinates-module">
-<h1>Get coordinates Module<a class="headerlink" href="#get-coordinates-module" title="Permalink to this heading"></a></h1>
+<div class="section" id="module-scripts.getCoordinate">
+<span id="get-coordinates-module"></span><h1>Get coordinates Module<a class="headerlink" href="#module-scripts.getCoordinate" title="Permalink to this heading"></a></h1>
+<span class="target" id="module-get_coordinates"></span><p>ROS Service to move the robot to a desired position specified in the request.</p>
+<dl class="simple">
+<dt>Service:</dt><dd><ul class="simple">
+<li><p>name: /get_coordinate</p></li>
+<li><p>request containing the desired x and y position</p></li>
+</ul>
+</dd>
+<dt>Service response:</dt><dd><ul class="simple">
+<li><p>indicating whether the robot reached the target position or not</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.getCoordinate.callback">
+<span class="sig-prename descclassname"><span class="pre">scripts.getCoordinate.</span></span><span class="sig-name descname"><span class="pre">callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/getCoordinate.html#callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.getCoordinate.callback" title="Permalink to this definition"></a></dt>
+<dd><p>Callback function for the <cite>/get_coordinate</cite> service. Recives as input the desired coordinates and uses the Action client for <cite>move_base</cite>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scripts.getCoordinate.get_coordinates">
+<span class="sig-prename descclassname"><span class="pre">scripts.getCoordinate.</span></span><span class="sig-name descname"><span class="pre">get_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/getCoordinate.html#get_coordinates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.getCoordinate.get_coordinates" title="Permalink to this definition"></a></dt>
+<dd><p>Initializes the <cite>/get_coordinate</cite> service and the <cite>getCoordinate</cite> node.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="module-scripts.joint_pose_modifier">
 <span id="joint-pose-modifier-module"></span><h1>Joint pose modifier Module<a class="headerlink" href="#module-scripts.joint_pose_modifier" title="Permalink to this heading"></a></h1>
-<span class="target" id="module-joint_pose_modifier"></span><dl class="py function">
+<span class="target" id="module-joint_pose_modifier"></span><p>The purpose of this script is to control the joint of a robot and move it to a desired position. It does this by publishing commands to the topic “myRob/joint1_position_controller/command” and subscribing to the topic “myRob/joint1_position_controller/state” to monitor the joint’s position. This allows the script to issue successive commands based on the current position of the robot’s joint.</p>
+<dl class="py function">
 <dt class="sig sig-object py" id="scripts.joint_pose_modifier.callback">
 <span class="sig-prename descclassname"><span class="pre">scripts.joint_pose_modifier.</span></span><span class="sig-name descname"><span class="pre">callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scripts/joint_pose_modifier.html#callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scripts.joint_pose_modifier.callback" title="Permalink to this definition"></a></dt>
 <dd><p>Callback function for the joint position.</p>

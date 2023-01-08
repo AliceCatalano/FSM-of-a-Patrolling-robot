@@ -6,7 +6,7 @@
    :synopsis: Python code to randomly change the battery level
 .. moduleauthor:: Alice Maria Catalano <s5157341@studenti.unige.it>
 
-ROS Node to pblish the battery level, keeping it charget for a random period of time and keeping it in charge for 10 seconds
+ROS Node to publish the battery level, keeping it charget for a random period of time and keeping it in charge for 10 seconds
 
 Publishes to:
     - /battery_signal a boolean flag to communicate when battery is low and when is totally charged

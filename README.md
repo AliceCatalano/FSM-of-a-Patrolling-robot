@@ -30,7 +30,7 @@ It calls the `change_position(robPos, desPos)` function, that is the main method
 * **ROOM_VISITING STATE**, this is the main state, is the state that will run more often because of the low threshold for the room urgency. All the calculation for this state rely on the `change_position(robPos, desPos)`: the state calls the function that keeps the list of urgent rooms updated and going through the list sends the desired position (desPos) to the function, that will upload the time stamps and the location of the robot.  
 
 ### Nodes interactions  
-![nodes](diagrams/node_interaction.PNG "nodes")    
+![nodes](Nodes.jpg)    
 
 The diagram of how the nodes interact, there are a few additional nodes and communication standards.  
 *  joint_pose_modifier, the purpose of this node is to control the joint motion. it publishes on the topic `myRob/joint1_position_controller/command` with a value between -3.14 and 3.14, and subscribes to the topic `myRob/joint1_position_controller/state` to check on the rotation progress.  

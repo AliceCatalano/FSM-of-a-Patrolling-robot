@@ -15,6 +15,7 @@ Subscribes  to:
 
 """
 import roslib
+import random
 import time
 import math
 import rospy
@@ -304,11 +305,11 @@ def room_scan():
     print("Scanning..")
     joint1_pose_pub = rospy.Publisher('/myRob/joint1_position_controller/command', Float64, queue_size=10)
     rospy.Subscriber("/myRob/joint1_position_controller/state", JointControllerState, callback_scan)
-    joint1_pose_pub.publish(-3.14)
-    while process_value > -3.0:
-        joint1_pose_pub.publish(-3.14)
-    while process_value < 3.0:
-        joint1_pose_pub.publish(3.14)
+    joint1_pose_pub.publish(-3.0)
+    while process_value > -2.9:
+        joint1_pose_pub.publish(-3.0)
+    while process_value < 2.9:
+        joint1_pose_pub.publish(3.0)
     joint1_pose_pub.publish(0.0)
 
 def callback_scan(msg):
@@ -331,6 +332,7 @@ def find_time(list):
             timestamp=timestamp+i[element]
      
     return timestamp
+
 def extract_value(input_list):
     """
     Function to rewrite the queried time stamp or coordinate, deleting the not digit part of the string, for both Rooms and Robot's data property
@@ -350,6 +352,7 @@ def extract_value(input_list):
     stripped_string = stripped_string.strip('"')
     # Convert the string to a float and return it
     return float(stripped_string)
+
 def common_connection(list1, list2):
   for string in list1:
     if string in list2:
@@ -529,26 +532,9 @@ class Room_visiting(smach.State):
         elif urgency_status == 1:
             
             for i in are_urgent :
-                
-                if "R1" in i:
-                    change_position('R1')
-                    room_scan()
-                    break
-                
-                elif "R2" in i:
-                    change_position('R2')
-                    room_scan()
-                    break
-                
-                elif "R3" in i:
-                    change_position('R3')
-                    room_scan()
-                    break
-                
-                elif "R4" in i:
-                    change_position('R4')
-                    room_scan()
-                    break
+                random_urgent = random.choice(are_urgent)
+                change_position(random_urgent)
+                room_scan()
         return 'stay_in_room'
 
 def main():

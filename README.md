@@ -80,14 +80,10 @@ The SMACH viewer is not inserted in the launch file, if the user wants to see th
 rosrun smach_viewer smach_viewer.py 
 ```
 
-Explaining the video
+Snips and Gif
 ------------------------
-https://user-images.githubusercontent.com/91795156/204397040-b504ffd3-79fb-436a-b283-3a28e1e36219.mp4  
 
-The video represents the code already running, so the `Load_map` state will not appear in green, while during the whole length of the video is possible to see how the other states exchange the lead in the code.  
-As it shown here, the code is not really fast but every implementation ends in the correct status and position.  
-Some control messages are printed to make the user understand if there's any bug or mistake in the implementation.  
-**BE CAREFUL** if you see the code stuck and the *execute* window printing messages with a format containing ".java" expression, all similar between them and nothing else printing, it means there's an inconsistency in the ontology. This could happen if the user forgets to change correctly the path of the onotology maps used or if any other mistake is present in the code.
+In these screeshoots different situation are represented. the first small video is when the robot is scanning the aruco markers
 
 Working hypothesis and environment
 --------------------------------------

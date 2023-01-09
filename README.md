@@ -12,7 +12,7 @@ Software Architecture
 ### Scenario
 This repository includes a pre-designed robot equipped with a camera and laser plugin, as well as a Gazebo environment where the robot is placed with aruco markers to build a semantical map. This map updates an already defined ontology.
 
-![image](environment.png)  
+![image](diagrams/environment.png)  
 
 The robot main behavior is the same as before: it mainly stays in the `CORRIDOR` and to move to the `ROOMS` when one of those becomes `URGENT`.  
 The `battery_status` variable may prevent the robot from executing tasks,  in which case the move_base goal will be changed to go recharge and switch to the designated status. Once recharged, the robot will resume the interrupted task.  
@@ -20,7 +20,7 @@ When the robot enters a room now has to scan it, with the camera, exploiting a 3
 When the robot enters a room, it scans the room using its camera and a 360° range of motion of the revolute joint at the base of its arm. Before entering the rooms, the robot is placed outside of them, surrounded by aruco markers. It scans these markers and builds the semantical map before using the `gmapping` tool to build the actual map..
 
 ### Finite state machine
-![flowchart](fsm_flowchart.png)  
+![flowchart](diagrams/fsm_flowchart.png)  
 
 The above diagram shows the Finite State Machine. It is composed by 4 main nodes, which are the states of the designed scenario:  
 * **LOAD_MAP STATE**, is a simple state that waits for the map to be uploaded by the external node `Load_map()`, which will subscribe to the topic `/loader`, which will publish *True* when the map is totally uploaded. This will change a flag in the callback in the `finite_state_machine.py` and will let the code go to the next state.  
@@ -30,7 +30,7 @@ It calls the `change_position(robPos, desPos)` function, that is the main method
 * **ROOM_VISITING STATE**, this is the main state, is the state that will run more often because of the low threshold for the room urgency. All the calculation for this state rely on the `change_position(robPos, desPos)`: the state calls the function that keeps the list of urgent rooms updated and going through the list sends the desired position (desPos) to the function, that will upload the time stamps and the location of the robot.  
 
 ### Nodes interactions  
-![nodes](Nodes.jpg)    
+![nodes](diagrams/Nodes.jpg)    
 
 The diagram of how the nodes interact, there are a few additional nodes and communication standards.  
 *  joint_pose_modifier, the purpose of this node is to control the joint motion. it publishes on the topic `myRob/joint1_position_controller/command` with a value between -3.14 and 3.14, and subscribes to the topic `myRob/joint1_position_controller/state` to check on the rotation progress.  

@@ -45,7 +45,7 @@ Installation and running procedure
 -------------------------------------
 This repository has a lot of dependencies coming from other ROS packages like the [aRMOR](https://github.com/EmaroLab/armor) and the [SMACH](http://wiki.ros.org/smach), [ros_control](http://wiki.ros.org/ros_control#Hardware_Interfaces), [aruco_ros](https://github.com/CarmineD8/aruco_ros) packages, so first of all these must be installed and run correctly as the sources explains.  
 
-Another toll was used to keep the terminal cleaner from not needed messages which is xterm, which will put the messages given by the aRMOR service, the finite_state_mahcine.py and the getCoordinates service in another small terminal. The command to make this program execute is already in the launch file, if the user want to use this feature the following installing instruction is needed:
+Another tool was used to keep the terminal cleaner from not needed messages which is xterm, which will put the messages given by the aRMOR service, the finite_state_mahcine.py and the getCoordinates.py service in another small terminal. The command to make this program execute is already in the launch file, if the user want to use this feature the following installing instruction is needed:
 
 ```bash
 sudo apt-get -y install xterm
@@ -60,7 +60,7 @@ catkin_make
 ```  
 After building the package successfully the user should:  
 * go in the src folder of this repository and move the `marker_publish.cpp` in the src folder of the aruco package at this path: aruco_ros/aruco_ros/src.  
-* enter in the `load_map.py` and fix the path of the map in line 72 and the new map in line 119, the same for the `finite_state_machine` code in the `Load_map` state inserting the same path of line 449. 
+* enter in the `load_map.py` and fix the path of the map in line 72 and the new map in line 119, the same for the `finite_state_machine.py` code in the `Load_map` state inserting the same path of line 449. 
 
 ```bash
 cd <ros_workspace_path>/src/fsm_patrolling_robot/scripts
@@ -100,10 +100,10 @@ Another important assumption is about the priority of the *emergency variables*,
 * The code is slow and takes time to compute the path
 * The Gazebo environment is designed on the map already described in the previous assignemnt 
 * There is not any user interface with which the user could create his own map at that moment or upload an existing ontology
-* 
+
 
 ### Possible technical improvements
-Technical improvements would involve changing the structure of the code to make it faster in the computation especially  in the `changing_position` function, for example assuming that the robot can check just the urgency of the rooms next to him.  
+Technical improvements would involve changing the structure of the code to make it faster in the computation especially  in the `changing_position` function, making it recoursive would be a great improvent in terms of code length.  
 Using thread and mutex to prevent the overwriting of the global variables would make the architecture more reliable and robust.
 
 

@@ -3,7 +3,7 @@ FSM of a Patrolling robot
 
 Introduction
 -----------------
-This repository contains a ROS (Robot Operating System) package that has improved the software architecture for a surveillance robot ([previous version](https://github.com/AliceCatalano/Finite-State-Machine-ExpLab.git) ) moving into the same environment built after scanning the aruco markers. The motion is planned using a finite state machine. The architecture is described in the following report specifying the ROS nodes and how the architecture's component interact between each other. The full [documentation](https://alicecatalano.github.io/fsm_patrolling_robot/#) is available to this link.  
+This repository contains a ROS (Robot Operating System) package that has improved the software architecture for a surveillance robot ([previous version](https://github.com/AliceCatalano/Finite-State-Machine-ExpLab.git) ) moving into the same environment built after scanning the aruco markers. The motion is planned using a finite state machine. The architecture is described in the following report specifying the ROS nodes and how the architecture's component interact between each other. The full [documentation](https://alicecatalano.github.io/fsm_patrolling_robot/) is available to this link.  
 The tools specified in the precious version of the code remained, some additional features were implemented such as: autonomous  motion ([move_base](http://wiki.ros.org/move_base) and [gmapping](http://wiki.ros.org/gmapping)) and image processing ([OpenCV](https://github.com/ros-perception/vision_opencv)).
 
 Software Architecture

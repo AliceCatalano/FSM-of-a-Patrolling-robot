@@ -22,7 +22,6 @@ from armor_api.armor_client import ArmorClient
 from std_msgs.msg import Bool, String
 from fsm_patrolling_robot.srv import RoomInformation
 
-motion_status=0
 markers_list = []
 
 def extract_aruco(string):
@@ -69,13 +68,12 @@ def load_std_map():
     global markers_list
     print( " Load the standard map", markers_list )
     client = ArmorClient("example", "ontoRef")
-    req=client.call('LOAD','FILE','',['/root/ros_ws/src/fsm_patrolling_robot/maps/topological_map.owl', 'http://bnc/exp-rob-lab/2022-23', 'true', 'PELLET', 'false'])
+    client.call('LOAD','FILE','',['/root/ros_ws/src/fsm_patrolling_robot/maps/topological_map.owl', 'http://bnc/exp-rob-lab/2022-23', 'true', 'PELLET', 'false'])
     rospy.wait_for_service('/room_info')
     roomInfo_srv = rospy.ServiceProxy('/room_info', RoomInformation)
     individuals = []
     for markers in markers_list: 
         res = roomInfo_srv(markers)
-        # getting the informations from the service
         roomID =res.room
         individuals.append(roomID)
         room_X = res.x
@@ -83,14 +81,10 @@ def load_std_map():
 
         client.manipulation.add_dataprop_to_ind("X_point", roomID , "float", str(room_X))
         client.manipulation.add_dataprop_to_ind("Y_point", roomID , "float", str(room_Y))
-        print(roomID, room_X, room_Y)
-    
-    #taking the room connections
         for c in res.connections:
             c.through_door
             individuals.append(c.through_door)
             client.call('ADD','OBJECTPROP','IND',['hasDoor', roomID, c.through_door])
-            print("the doors are ", individuals)
     
     #set() method is used to convert any iterable to sequence of distinct elements
     client.call('DISJOINT','IND','', list(set(individuals)))
@@ -115,7 +109,6 @@ def load_std_map():
     client.call('REPLACE','DATAPROP','IND',['now', 'Robot1', 'Long', current_time, old_rob_time])
    
     client.call('REASON','','',[''])
-    
     client.call('SAVE','','',['/root/ros_ws/src/fsm_patrolling_robot/maps/my_map.owl'])
 
 def reader():
@@ -133,18 +126,15 @@ def reader():
     """
     rospy.init_node('loader_node', anonymous=True)
     subscriber=rospy.Subscriber("/marker_publisher/target", String, extract_aruco)
+    pub = rospy.Publisher('/loader', Bool, queue_size=10)
     while not rospy.is_shutdown():
         if len(markers_list)>=7:
-            rospy.signal_shutdown('marker_publisher')
-            print("markers are all here, build map")
+            print("ALL MARKERS DETECTED")
             subscriber.unregister()
-            pub = rospy.Publisher('loader', Bool, queue_size=10)
-            pub.publish(True)
             load_std_map()
-            print("map built")
-            pub.publish(False)
-            rospy.sleep(2)
-            rospy.signal_shutdown('loader')
+            pub.publish(0)
+            rospy.sleep(3)
+            rospy.signal_shutdown('loader_node')
         
 if __name__ == '__main__':
 

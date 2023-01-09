@@ -94,7 +94,7 @@ bool markerCallback(fsm_patrolling_robot::RoomInformation::Request &req, fsm_pat
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "assignment2");
+	ros::init(argc, argv, "fsm_patrolling_robot");
 	ros::NodeHandle nh;
 	ros::ServiceServer oracle = nh.advertiseService( "/room_info",markerCallback);
 	ros::spin();

@@ -12,9 +12,6 @@ It menages the behavior  of a surveillance  robot, that stays mostly in corridor
 Subscribes  to:
     - /loader a Boolean flag to communicate when the map is totally created.
     - /battery_signal a Boolean flag to communicate when battery is low and when is totally charged
-    - /myRob/joint1_position_controller/state topic in which te position of the joint is published
-Publishes to:
-    - /myRob/joint1_position_controller/command topic to that receives the angles to rotate the joint
 
 """
 import roslib
@@ -25,8 +22,9 @@ import smach
 import smach_ros
 from armor_api.armor_client import ArmorClient
 from std_msgs.msg import Bool, Float64
-from assignment2.srv import Get_coordinates
+from fsm_patrolling_robot.srv import Get_coordinates
 from geometry_msgs.msg import Twist
+from control_msgs.msg import JointControllerState
 
 pause_time= 1.5         #global variable for the sleeping time
 battery_status = 1      # Battery is charged
@@ -37,6 +35,7 @@ are_urgent=''           # String resulting from the query of the individuals in 
 robot_position=''       # String that contains always one element, which is the robot position in that moment
 timestamp = ''          # String that represent the queried timestamp
 coordinates = {}        # Dictionary for the rooms coordinates
+process_value=0
 
 def callback(data):
     """ 
@@ -73,13 +72,12 @@ def go_to_coordinate(coor):
         - response.return: An integer indicating whether the target coordinates have been reached (1) or not (0).
 
     """
-    print('in go to coordinate')
     get_coordinate = rospy.ServiceProxy('get_coordinate', Get_coordinates)
     response = get_coordinate(coordinates[coor]['X'] , coordinates[coor]['Y'])
     if response.return_ == 1:
-        print('Room reached')
+        print('Location reached')
     else:
-        print('Room not reached')
+        print('Location not reached')
         go_to_coordinate(coor)
     return response.return_
 
@@ -191,7 +189,7 @@ def urgent_rooms():
         
     return are_urgent
 
-def change_position(robPos, desPos):
+def change_position(desPos):
     """
     Function used everytime the Robot has to change position, taking into consideration different behaviors based on the different LOCATION's subclasses
 
@@ -212,155 +210,72 @@ def change_position(robPos, desPos):
 
         - **robot_position** the updated robot position at the end of the location change
     """
-    global shared_connection
-    global are_urgent
-    global robot_position
-    
     client = ArmorClient("example", "ontoRef")
     client.call('REASON','','',[''])
+    req=client.call('QUERY','OBJECTPROP','IND',['isIn','Robot1'])
+    robPos=find_individual(req.queried_objects)
     print('change position from: ', robPos, 'to: ', desPos)
-    robot_connections = client.call('QUERY','OBJECTPROP','IND',['connectedTo', robPos])
-    arrival_connections = client.call('QUERY','OBJECTPROP','IND',['connectedTo', desPos])
-    
-    robot_possible_moves = find_list(robot_connections.queried_objects)
-    arrival_moves = find_list(arrival_connections.queried_objects)
-    
-    shared_connection= find_path(robot_possible_moves, arrival_moves, robPos)
-    
-    isRoom = client.call('QUERY','CLASS','IND',[desPos, 'true'])
-    is_Room= isRoom.queried_objects
-    
-    if is_Room == ['URGENT'] or is_Room == ['ROOM']:
+    robot_can_reach = client.call('QUERY','OBJECTPROP','IND',['canReach', 'Robot1'])
+    robot_can_reach = find_list(robot_can_reach.queried_objects)
+
+
+    if desPos in robot_can_reach:
+        #print('Robot can reach the desired position')
+        #Update isIn property
+        client.call('REPLACE','OBJECTPROP','IND',['isIn', 'Robot1',desPos,robPos])
+        client.call('REASON','','',[''])
         
+        #Update now data property
+        req=client.call('QUERY','DATAPROP','IND',['now', 'Robot1'])
+        client.call('REPLACE','DATAPROP','IND',['now', 'Robot1', 'Long', str(math.floor(time.time())), find_time(req.queried_objects)])
+        client.call('REASON','','',[''])
         
-        if shared_connection == '':
-            print('no connections found')
-            # Case in which the robot is in the other side of the map, i.e. is in R4 and R1 becomes urgent
-            if 'C1' in robot_possible_moves:
-                go_to_coordinate('C1')
-                client.call('REPLACE', 'OBJECTPROP', 'IND', ['isIn', 'Robot1', robPos, 'C1'])
-                client.call('REASON','','',[''])
-            elif 'C2' in robot_possible_moves:
-                go_to_coordinate('C2')
-                client.call('REPLACE', 'OBJECTPROP', 'IND', ['isIn', 'Robot1', robPos, 'C2'])
-                client.call('REASON','','',[''])
-            
-            query_position = client.call('QUERY','OBJECTPROP','IND',['isIn','Robot1'])
-            robot_position = find_individual(query_position.queried_objects)
-            print('now the robot is in ', robot_position)
-            robot_connections = client.call('QUERY','OBJECTPROP','IND',['connectedTo', robot_position])
-            robot_possible_moves = find_list(robot_connections.queried_objects)
-
-            shared_connection= find_path(robot_possible_moves, arrival_moves, robot_position)
-            
-            go_to_coordinate(shared_connection)
-            client.call('REPLACE', 'OBJECTPROP', 'IND', ['isIn', 'Robot1', robPos, shared_connection])
-            client.call('REASON','','',[''])
-
-            go_to_coordinate(desPos)
-            client.call('REPLACE', 'OBJECTPROP', 'IND', ['isIn', 'Robot1', shared_connection, desPos])
-            client.call('REASON','','',[''])
-
-            query_position = client.call('QUERY','OBJECTPROP','IND',['isIn','Robot1'])
-            robot_position = find_individual(query_position.queried_objects)
-            
-            rospy.sleep(pause_time)
-            rob_time = client.call('QUERY','DATAPROP','IND',['now', 'Robot1'])
-            old_rob_time = extract_value(rob_time.queried_objects)
-            current_time=str(math.floor(time.time()))
-            client.call('REPLACE','DATAPROP','IND',['now', 'Robot1', 'Long', current_time, old_rob_time])
-            client.call('REASON','','',[''])
-            
-            room_time = client.call('QUERY','DATAPROP','IND',['visitedAt', desPos])
-            old_room_time = extract_value(room_time.queried_objects)
-            client.call('REPLACE','DATAPROP','IND',['visitedAt', desPos, 'Long', current_time, old_room_time])
-            
-            client.call('REASON','','',[''])
-        
-        elif shared_connection == robPos:
-            print('the robot is in the next room ', robPos)
-            go_to_coordinate(shared_connection)
-            client.call('REPLACE', 'OBJECTPROP', 'IND', ['isIn', 'Robot1', desPos, shared_connection])
-            client.call('REASON','','',[''])
-
-            query_position = client.call('QUERY','OBJECTPROP','IND',['isIn','Robot1'])
-            robot_position = find_individual(query_position.queried_objects)
-
-            rospy.sleep(pause_time)
-            rob_time = client.call('QUERY','DATAPROP','IND',['now', 'Robot1'])
-            old_rob_time = extract_value(rob_time.queried_objects)
-            current_time=str(math.floor(time.time()))
-            client.call('REPLACE','DATAPROP','IND',['now', 'Robot1', 'Long', current_time, old_rob_time])
-            client.call('REASON','','',[''])
-            
-            room_time = client.call('QUERY','DATAPROP','IND',['visitedAt', desPos])
-            old_room_time = extract_value(room_time.queried_objects)
-            
-            client.call('REPLACE','DATAPROP','IND',['visitedAt', desPos, 'Long', current_time, old_room_time])
+        #Update visitedAt data property
+        isRoom = client.call('QUERY','CLASS','IND',[desPos, 'true'])
+        if isRoom.queried_objects == ['URGENT'] or isRoom.queried_objects == ['ROOM']:
+            req=client.call('QUERY','DATAPROP','IND',['visitedAt', desPos])
+            client.call('REPLACE','DATAPROP','IND',['visitedAt', desPos, 'Long', str(math.floor(time.time())), find_time(req.queried_objects)])
             client.call('REASON','','',[''])
 
 
-        else:
-            go_to_coordinate(shared_connection)
-            client.call('REPLACE', 'OBJECTPROP', 'IND', ['isIn', 'Robot1', robPos, shared_connection])
-            client.call('REASON','','',[''])
-            
-            go_to_coordinate(desPos)
-            client.call('REPLACE', 'OBJECTPROP', 'IND', ['isIn', 'Robot1', desPos, shared_connection])
-            client.call('REASON','','',[''])
-            
-            query_position = client.call('QUERY','OBJECTPROP','IND',['isIn','Robot1'])
-            robot_position = find_individual(query_position.queried_objects)
 
-            rospy.sleep(pause_time)
-            rob_time = client.call('QUERY','DATAPROP','IND',['now', 'Robot1'])
-            old_rob_time = extract_value(rob_time.queried_objects)
-            current_time=str(math.floor(time.time()))
-            client.call('REPLACE','DATAPROP','IND',['now', 'Robot1', 'Long', current_time, old_rob_time])
-            client.call('REASON','','',[''])
-            
-            room_time = client.call('QUERY','DATAPROP','IND',['visitedAt', desPos])
-            old_room_time = extract_value(room_time.queried_objects)
-            
-            client.call('REPLACE','DATAPROP','IND',['visitedAt', desPos, 'Long', current_time, old_room_time])
-            client.call('REASON','','',[''])
-        
-        return robot_position
-    
     else:
-        #if the desired position is a corridor or room E
-        print('i want to go to ', desPos, 'from ', robPos)
-        if shared_connection == '':
-            if 'C1' in robot_possible_moves:
-                go_to_coordinate('C1')
-                client.call('REPLACE', 'OBJECTPROP', 'IND', ['isIn', 'Robot1', robPos, 'C1'])
-                client.call('REASON','','',[''])
-            elif 'C2' in robot_possible_moves:
-                go_to_coordinate('C2')
-                client.call('REPLACE', 'OBJECTPROP', 'IND', ['isIn', 'Robot1', robPos, 'C2'])
-                client.call('REASON','','',[''])
-            
-            query_position = client.call('QUERY','OBJECTPROP','IND',['isIn','Robot1'])
-            robot_position = find_individual(query_position.queried_objects)
+        #print('Robot cannot reach the desired position')
+        location_connectedTo = client.call('QUERY','OBJECTPROP','IND',['connectedTo', desPos])
+        location_connectedTo = find_list(location_connectedTo.queried_objects)
+        #print('Desried postion is connected to: ', location_connectedTo)
+        common=common_connection(location_connectedTo,robot_can_reach)
+        if common == None:
+            print('Robot cannot reach the desired position')
+            client.call('REPLACE','OBJECTPROP','IND',['isIn', 'Robot1',robot_can_reach[0],robPos])
+            client.call('REASON','','',[''])
+            req=client.call('QUERY','OBJECTPROP','IND',['isIn','Robot1'])
+            robPos=find_individual(req.queried_objects)
+            robot_can_reach = client.call('QUERY','OBJECTPROP','IND',['canReach', 'Robot1'])
+            common=common_connection(location_connectedTo,find_list(robot_can_reach.queried_objects))
 
-            go_to_coordinate(desPos)
-            client.call('REPLACE', 'OBJECTPROP', 'IND', ['isIn', 'Robot1', robot_position, desPos])
+        
+        client.call('REPLACE','OBJECTPROP','IND',['isIn', 'Robot1',common,robPos])
+        client.call('REASON','','',[''])
+        req=client.call('QUERY','OBJECTPROP','IND',['isIn','Robot1'])
+        robPos=find_individual(req.queried_objects)
+        client.call('REPLACE','OBJECTPROP','IND',['isIn', 'Robot1',desPos,robPos])
+        client.call('REASON','','',[''])
+        #Update now data property
+        req=client.call('QUERY','DATAPROP','IND',['now', 'Robot1'])
+        client.call('REPLACE','DATAPROP','IND',['now', 'Robot1', 'Long', str(math.floor(time.time())), find_time(req.queried_objects)])
+        client.call('REASON','','',[''])
+        #Update visitedAt data property
+        isRoom = client.call('QUERY','CLASS','IND',[desPos, 'true'])
+        if isRoom.queried_objects == ['URGENT'] or isRoom.queried_objects == ['ROOM']:
+            req=client.call('QUERY','DATAPROP','IND',['visitedAt', desPos])
+            client.call('REPLACE','DATAPROP','IND',['visitedAt', desPos, 'Long', str(math.floor(time.time())), find_time(req.queried_objects)])
             client.call('REASON','','',[''])
-            #the query is needed again to return the updated result
-            query_position = client.call('QUERY','OBJECTPROP','IND',['isIn','Robot1'])
-            robot_position = find_individual(query_position.queried_objects)
-        else:
-            go_to_coordinate(shared_connection)
-            client.call('REPLACE', 'OBJECTPROP', 'IND', ['isIn', 'Robot1', robPos, shared_connection])
-            go_to_coordinate(desPos)
-            client.call('REPLACE', 'OBJECTPROP', 'IND', ['isIn', 'Robot1', shared_connection, desPos])
-            client.call('REASON','','',[''])
-            
-            query_position = client.call('QUERY','OBJECTPROP','IND',['isIn','Robot1'])
-            robot_position = find_individual(query_position.queried_objects)
-        return robot_position    
-    
-    return robot_position
+
+    req=client.call('QUERY','OBJECTPROP','IND',['isIn','Robot1'])
+    go_to_coordinate(find_individual(req.queried_objects))
+    print('Robot isIn',find_individual(req.queried_objects))
+    client.call('REASON','','',[''])
 
 def setup_Dictionary():
     """
@@ -380,8 +295,6 @@ def setup_Dictionary():
         Y=float(extract_value(req.queried_objects))
         coordinates[i] = {'X': X, 'Y': Y}
     
-    print(coordinates)
-    
 def room_scan():
     """"
     This function controls the commands passed to the joints. Joint 1 will rotate 360 degrees to scan the room."
@@ -392,9 +305,9 @@ def room_scan():
     joint1_pose_pub = rospy.Publisher('/myRob/joint1_position_controller/command', Float64, queue_size=10)
     rospy.Subscriber("/myRob/joint1_position_controller/state", JointControllerState, callback_scan)
     joint1_pose_pub.publish(-3.14)
-    while process_value > -3.14:
+    while process_value > -3.0:
         joint1_pose_pub.publish(-3.14)
-    while process_value < 3.14:
+    while process_value < 3.0:
         joint1_pose_pub.publish(3.14)
     joint1_pose_pub.publish(0.0)
 
@@ -402,6 +315,22 @@ def callback_scan(msg):
     global process_value
     process_value = msg.process_value
 
+def find_time(list):
+    timestamp = ''
+    """
+    Function to clean the queried time stamp for both Rooms and Robot's data property.
+
+    Args:
+        - *list* the list of queried objects section of the Armor service message.
+    Returns:
+        all the element between the double quotes
+    
+    """
+    for i in list:
+        for element in range(1, 11):
+            timestamp=timestamp+i[element]
+     
+    return timestamp
 def extract_value(input_list):
     """
     Function to rewrite the queried time stamp or coordinate, deleting the not digit part of the string, for both Rooms and Robot's data property
@@ -421,7 +350,10 @@ def extract_value(input_list):
     stripped_string = stripped_string.strip('"')
     # Convert the string to a float and return it
     return float(stripped_string)
-
+def common_connection(list1, list2):
+  for string in list1:
+    if string in list2:
+        return string
 
 class Load_map(smach.State):
 
@@ -449,10 +381,10 @@ class Load_map(smach.State):
             rospy.sleep(pause_time)
             return 'waiting_map'
         else:
-            client.call('LOAD','FILE','',['/root/ros_ws/src/assignment2/maps/my_map.owl', 'http://bnc/exp-rob-lab/2022-23', 'true', 'PELLET', 'false'])
+            client.call('LOAD','FILE','',['/root/ros_ws/src/fsm_patrolling_robot/maps/my_map.owl', 'http://bnc/exp-rob-lab/2022-23', 'true', 'PELLET', 'false'])
             print(' MAp loaded FSM starts the planning')
             setup_Dictionary()
-            change_position('E','E')
+            go_to_coordinate('E')
             client.call('REASON','','',[''])
             
             return 'uploaded_map'
@@ -500,7 +432,7 @@ class Corridor_cruise(smach.State):
                     print('the robot is in C1 should go in C2')
                     rospy.sleep(pause_time)
 
-                    change_position(robot_position, 'C2')
+                    change_position('C2')
                     client.call('REASON','','',[''])
                     
                     return 'stay_in_corridor'
@@ -509,12 +441,12 @@ class Corridor_cruise(smach.State):
                     print('the robot is in C2 should go in C1')
                     rospy.sleep(pause_time)
                     
-                    change_position(robot_position, 'C1')
+                    change_position('C1')
                     client.call('REASON','','',[''])
                     
                     return 'stay_in_corridor'
                 else:
-                    change_position(robot_position, 'C1')
+                    change_position('C1')
                     return 'stay_in_corridor'
             else:
                 return 'urgent_room'
@@ -548,8 +480,7 @@ class Recharging(smach.State):
         rospy.sleep(pause_time)
         
         if battery_status == 0:
-            change_position(robot_position, 'E')
-            client.call('REASON','','',[''])
+            change_position('E')
             
             return 'on_charge'
         else:
@@ -600,42 +531,22 @@ class Room_visiting(smach.State):
             for i in are_urgent :
                 
                 if "R1" in i:
-                    query_position = client.call('QUERY','OBJECTPROP','IND',['isIn','Robot1'])
-                    robot_position = find_individual(query_position.queried_objects)
-                    client.call('REASON','','',[''])
-                    print('the robot was in ', robot_position)
-                    new_pose = change_position(robot_position,'R1')
-                    print('now the robot is in ', new_pose)
+                    change_position('R1')
                     room_scan()
                     break
                 
                 elif "R2" in i:
-                    query_position = client.call('QUERY','OBJECTPROP','IND',['isIn','Robot1'])
-                    robot_position = find_individual(query_position.queried_objects)
-                    client.call('REASON','','',[''])
-                    print('the robot was in ', robot_position)
-                    new_pose = change_position(robot_position,'R2')
-                    print('now the robot is in ', new_pose)
+                    change_position('R2')
                     room_scan()
                     break
                 
                 elif "R3" in i:
-                    query_position = client.call('QUERY','OBJECTPROP','IND',['isIn','Robot1'])
-                    robot_position = find_individual(query_position.queried_objects)
-                    client.call('REASON','','',[''])
-                    print('the robot was in ', robot_position)
-                    new_pose = change_position(robot_position,'R3')
-                    print('now the robot is in ', new_pose)
+                    change_position('R3')
                     room_scan()
                     break
                 
                 elif "R4" in i:
-                    query_position = client.call('QUERY','OBJECTPROP','IND',['isIn','Robot1'])
-                    robot_position = find_individual(query_position.queried_objects)
-                    client.call('REASON','','',[''])
-                    print('the robot was in ', robot_position)
-                    new_pose = change_position(robot_position,'R4')
-                    print('now the robot is in ', new_pose)
+                    change_position('R4')
                     room_scan()
                     break
         return 'stay_in_room'
@@ -670,7 +581,7 @@ def main():
     # Create and start the introspection server
     sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
     sis.start()
-    rospy.Subscriber("loader", Bool, callback)
+    rospy.Subscriber("/loader", Bool, callback)
     rospy.Subscriber("battery_signal", Bool, callback_batt)
     outcome = sm.execute()
     # Wait for ctrl-c to stop the application

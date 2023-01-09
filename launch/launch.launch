@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <launch>
-
+  <!-- start gazebo server  -->
   <node pkg="armor" type="execute" name="armor_service" args="it.emarolab.armor.ARMORMainService" launch-prefix = "xterm -e"/>
-  <!-- start gazebo server-->
+
   <node name="joint_pose_modifier" pkg="fsm_patrolling_robot" type="joint_pose_modifier.py" />
   <node name="load_map" pkg="fsm_patrolling_robot" type="load_map.py" output="screen"/>
   
-  <node name= "getCoordinate" pkg= "fsm_patrolling_robot" type="getCoordinate.py" launch-prefix = "xterm -e" />
+  <node name= "getCoordinate" pkg= "fsm_patrolling_robot" type="getCoordinate.py" />
   <node name="battery_signal" pkg="fsm_patrolling_robot" type="battery_signal.py"/>
-  <node name= "finite_state_machine" pkg= "fsm_patrolling_robot" type="finite_state_machine.py" launch-prefix = "xterm -e" />
+  <node name= "finite_state_machine" pkg= "fsm_patrolling_robot" type="finite_state_machine.py" output="screen" />
+
 </launch>

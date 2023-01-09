@@ -88,7 +88,6 @@
 <span class="kn">from</span> <span class="nn">std_msgs.msg</span> <span class="kn">import</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">String</span>
 <span class="kn">from</span> <span class="nn">fsm_patrolling_robot.srv</span> <span class="kn">import</span> <span class="n">RoomInformation</span>
 
-<span class="n">motion_status</span><span class="o">=</span><span class="mi">0</span>
 <span class="n">markers_list</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="extract_aruco"><a class="viewcode-back" href="../../index.html#scripts.load_map.extract_aruco">[docs]</a><span class="k">def</span> <span class="nf">extract_aruco</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
@@ -135,13 +134,12 @@
     <span class="k">global</span> <span class="n">markers_list</span>
     <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot; Load the standard map&quot;</span><span class="p">,</span> <span class="n">markers_list</span> <span class="p">)</span>
     <span class="n">client</span> <span class="o">=</span> <span class="n">ArmorClient</span><span class="p">(</span><span class="s2">&quot;example&quot;</span><span class="p">,</span> <span class="s2">&quot;ontoRef&quot;</span><span class="p">)</span>
-    <span class="n">req</span><span class="o">=</span><span class="n">client</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;LOAD&#39;</span><span class="p">,</span><span class="s1">&#39;FILE&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">,[</span><span class="s1">&#39;/root/ros_ws/src/fsm_patrolling_robot/maps/topological_map.owl&#39;</span><span class="p">,</span> <span class="s1">&#39;http://bnc/exp-rob-lab/2022-23&#39;</span><span class="p">,</span> <span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="s1">&#39;PELLET&#39;</span><span class="p">,</span> <span class="s1">&#39;false&#39;</span><span class="p">])</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;LOAD&#39;</span><span class="p">,</span><span class="s1">&#39;FILE&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">,[</span><span class="s1">&#39;/root/ros_ws/src/fsm_patrolling_robot/maps/topological_map.owl&#39;</span><span class="p">,</span> <span class="s1">&#39;http://bnc/exp-rob-lab/2022-23&#39;</span><span class="p">,</span> <span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="s1">&#39;PELLET&#39;</span><span class="p">,</span> <span class="s1">&#39;false&#39;</span><span class="p">])</span>
     <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span><span class="s1">&#39;/room_info&#39;</span><span class="p">)</span>
     <span class="n">roomInfo_srv</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span><span class="s1">&#39;/room_info&#39;</span><span class="p">,</span> <span class="n">RoomInformation</span><span class="p">)</span>
     <span class="n">individuals</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">markers</span> <span class="ow">in</span> <span class="n">markers_list</span><span class="p">:</span> 
         <span class="n">res</span> <span class="o">=</span> <span class="n">roomInfo_srv</span><span class="p">(</span><span class="n">markers</span><span class="p">)</span>
-        <span class="c1"># getting the informations from the service</span>
         <span class="n">roomID</span> <span class="o">=</span><span class="n">res</span><span class="o">.</span><span class="n">room</span>
         <span class="n">individuals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">roomID</span><span class="p">)</span>
         <span class="n">room_X</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span>
@@ -149,14 +147,10 @@
 
         <span class="n">client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">add_dataprop_to_ind</span><span class="p">(</span><span class="s2">&quot;X_point&quot;</span><span class="p">,</span> <span class="n">roomID</span> <span class="p">,</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">room_X</span><span class="p">))</span>
         <span class="n">client</span><span class="o">.</span><span class="n">manipulation</span><span class="o">.</span><span class="n">add_dataprop_to_ind</span><span class="p">(</span><span class="s2">&quot;Y_point&quot;</span><span class="p">,</span> <span class="n">roomID</span> <span class="p">,</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">room_Y</span><span class="p">))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">roomID</span><span class="p">,</span> <span class="n">room_X</span><span class="p">,</span> <span class="n">room_Y</span><span class="p">)</span>
-    
-    <span class="c1">#taking the room connections</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">connections</span><span class="p">:</span>
             <span class="n">c</span><span class="o">.</span><span class="n">through_door</span>
             <span class="n">individuals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">through_door</span><span class="p">)</span>
             <span class="n">client</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;ADD&#39;</span><span class="p">,</span><span class="s1">&#39;OBJECTPROP&#39;</span><span class="p">,</span><span class="s1">&#39;IND&#39;</span><span class="p">,[</span><span class="s1">&#39;hasDoor&#39;</span><span class="p">,</span> <span class="n">roomID</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">through_door</span><span class="p">])</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;the doors are &quot;</span><span class="p">,</span> <span class="n">individuals</span><span class="p">)</span>
     
     <span class="c1">#set() method is used to convert any iterable to sequence of distinct elements</span>
     <span class="n">client</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;DISJOINT&#39;</span><span class="p">,</span><span class="s1">&#39;IND&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">individuals</span><span class="p">)))</span>
@@ -181,7 +175,6 @@
     <span class="n">client</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;REPLACE&#39;</span><span class="p">,</span><span class="s1">&#39;DATAPROP&#39;</span><span class="p">,</span><span class="s1">&#39;IND&#39;</span><span class="p">,[</span><span class="s1">&#39;now&#39;</span><span class="p">,</span> <span class="s1">&#39;Robot1&#39;</span><span class="p">,</span> <span class="s1">&#39;Long&#39;</span><span class="p">,</span> <span class="n">current_time</span><span class="p">,</span> <span class="n">old_rob_time</span><span class="p">])</span>
    
     <span class="n">client</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;REASON&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">,[</span><span class="s1">&#39;&#39;</span><span class="p">])</span>
-    
     <span class="n">client</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;SAVE&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">,[</span><span class="s1">&#39;/root/ros_ws/src/fsm_patrolling_robot/maps/my_map.owl&#39;</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="reader"><a class="viewcode-back" href="../../index.html#scripts.load_map.reader">[docs]</a><span class="k">def</span> <span class="nf">reader</span><span class="p">():</span>
@@ -199,18 +192,15 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s1">&#39;loader_node&#39;</span><span class="p">,</span> <span class="n">anonymous</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">subscriber</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="s2">&quot;/marker_publisher/target&quot;</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">extract_aruco</span><span class="p">)</span>
+    <span class="n">pub</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Publisher</span><span class="p">(</span><span class="s1">&#39;/loader&#39;</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">queue_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
     <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">markers_list</span><span class="p">)</span><span class="o">&gt;=</span><span class="mi">7</span><span class="p">:</span>
-            <span class="n">rospy</span><span class="o">.</span><span class="n">signal_shutdown</span><span class="p">(</span><span class="s1">&#39;marker_publisher&#39;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;markers are all here, build map&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ALL MARKERS DETECTED&quot;</span><span class="p">)</span>
             <span class="n">subscriber</span><span class="o">.</span><span class="n">unregister</span><span class="p">()</span>
-            <span class="n">pub</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Publisher</span><span class="p">(</span><span class="s1">&#39;loader&#39;</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">queue_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-            <span class="n">pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">load_std_map</span><span class="p">()</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;map built&quot;</span><span class="p">)</span>
-            <span class="n">pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-            <span class="n">rospy</span><span class="o">.</span><span class="n">signal_shutdown</span><span class="p">(</span><span class="s1">&#39;loader&#39;</span><span class="p">)</span></div>
+            <span class="n">pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">signal_shutdown</span><span class="p">(</span><span class="s1">&#39;loader_node&#39;</span><span class="p">)</span></div>
         
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
 

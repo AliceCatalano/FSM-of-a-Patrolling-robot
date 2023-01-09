@@ -198,7 +198,7 @@ add_dependencies(marker_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPO
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_assignment2.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_fsm_patrolling_robot.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
